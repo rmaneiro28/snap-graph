@@ -27,7 +27,7 @@ function App() {
     try {
       const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(cleanUrl)}`);
       const data = await response.json();
-      
+
       if (data.status === 'success') {
         setMetadata(data.data);
       } else {
@@ -45,14 +45,16 @@ function App() {
     setDownloading(true);
     try {
       await new Promise(r => setTimeout(r, 300));
-      
+
       const hostname = url ? new URL(url).hostname.replace('www.', '').split('.')[0] : 'image';
       const filename = `snapgraph-og-image-generator-${hostname}-${selectedTemplate}.png`;
 
-      const dataUrl = await toPng(previewRef.current, { 
-        pixelRatio: 2
+      const dataUrl = await toPng(previewRef.current, {
+        pixelRatio: 2,
+        cacheBust: true,
+        skipFonts: true
       });
-      
+
       const link = document.createElement('a');
       link.download = filename;
       link.href = dataUrl;
@@ -61,7 +63,8 @@ function App() {
       document.body.removeChild(link);
     } catch (err) {
       console.error('Download failed', err);
-      alert('Error al generar la imagen. Detalles: ' + err.message);
+      const errorMessage = err?.message || (typeof err === 'string' ? err : 'Error de CORS o red al cargar recursos.');
+      alert('Error al generar la imagen. Detalles: ' + errorMessage);
     } finally {
       setDownloading(false);
     }
@@ -114,7 +117,7 @@ function App() {
 
       <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <section className="space-y-12">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -130,15 +133,15 @@ function App() {
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl blur opacity-20 group-focus-within:opacity-40 transition duration-500"></div>
             <div className="relative flex gap-2">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Escribe tu URL aquí..."
                 className="snap-input"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && fetchMetadata()}
               />
-              <button 
+              <button
                 onClick={fetchMetadata}
                 disabled={loading || downloading}
                 className="btn-primary"
@@ -154,19 +157,17 @@ function App() {
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">Selecciona un Estilo</h3>
             <div className="grid grid-cols-3 gap-4">
               {TEMPLATES.map((t) => (
-                <button 
-                  key={t.id} 
-                  className={`glass glass-hover p-4 flex flex-col items-center gap-3 border-2 transition-all ${
-                    selectedTemplate === t.id ? 'border-cyan-500/50 bg-white/[0.08]' : 'border-transparent'
-                  }`}
+                <button
+                  key={t.id}
+                  className={`glass glass-hover p-4 flex flex-col items-center gap-3 border-2 transition-all ${selectedTemplate === t.id ? 'border-cyan-500/50 bg-white/[0.08]' : 'border-transparent'
+                    }`}
                   onClick={() => setSelectedTemplate(t.id)}
                 >
                   <div className={`${selectedTemplate === t.id ? 'text-cyan-400' : 'text-zinc-500'}`}>
                     {t.icon}
                   </div>
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${
-                    selectedTemplate === t.id ? 'text-white' : 'text-zinc-500'
-                  }`}>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${selectedTemplate === t.id ? 'text-white' : 'text-zinc-500'
+                    }`}>
                     {t.name}
                   </span>
                 </button>
@@ -182,11 +183,11 @@ function App() {
             </h3>
             <AnimatePresence>
               {metadata && (
-                <motion.button 
+                <motion.button
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
-                  onClick={handleDownload} 
+                  onClick={handleDownload}
                   disabled={downloading}
                   className="text-cyan-400 hover:text-cyan-300 flex items-center gap-2 text-xs font-black tracking-widest transition-all disabled:opacity-50"
                 >
@@ -199,7 +200,7 @@ function App() {
 
           <AnimatePresence mode="wait">
             {!metadata && !loading ? (
-              <motion.div 
+              <motion.div
                 key="empty"
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -212,7 +213,7 @@ function App() {
                 <p className="text-zinc-600 text-sm font-bold uppercase tracking-widest">Esperando una URL...</p>
               </motion.div>
             ) : loading ? (
-              <motion.div 
+              <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -225,7 +226,7 @@ function App() {
                 </p>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 key="preview"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -236,23 +237,26 @@ function App() {
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-green-500/20"></div>
                 </div>
-                <div 
+                <div
                   className="p-8 md:p-12 h-[320px] md:h-[400px] flex flex-col justify-center gap-6"
-                  style={{ 
-                    background: tStyles.background, 
+                  style={{
+                    background: tStyles.background,
                     color: tStyles.color,
                   }}
                 >
                   <div className="flex items-center gap-3">
                     {metadata.logo ? (
-                      <img 
-                        src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(metadata.logo.url)}`} 
-                        alt="logo" 
-                        crossOrigin="anonymous"
-                        className="w-8 h-8 object-contain" 
+                      <img
+                        src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(metadata.logo.url)}`}
+                        alt="logo"
+                        className="w-8 h-8 object-contain"
                       />
                     ) : (
-                      <img src="/logo.png" alt="SnapGraph Isotype" className="w-8 h-8 object-contain" />
+                      <img 
+                        src={`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`} 
+                        alt="logo" 
+                        className="w-8 h-8 object-contain rounded-md"
+                      />
                     )}
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{metadata.publisher || 'SNAPGRAPH'}</span>
                   </div>
@@ -261,8 +265,8 @@ function App() {
                     {metadata.description}
                   </p>
                   <div className="mt-4 pt-6 border-t border-white/[0.05] flex items-center justify-between">
-                     <span className="text-[9px] font-black tracking-[0.3em] uppercase" style={{ color: tStyles.accent }}>{url ? new URL(url).hostname : ''}</span>
-                     <span className="text-[9px] font-bold opacity-20 uppercase tracking-widest">v1.2 Engine</span>
+                    <span className="text-[9px] font-black tracking-[0.3em] uppercase" style={{ color: tStyles.accent }}>{url ? new URL(url).hostname : ''}</span>
+                    <span className="text-[9px] font-bold opacity-20 uppercase tracking-widest">v1.2 Engine</span>
                   </div>
                 </div>
               </motion.div>
@@ -274,11 +278,11 @@ function App() {
       {/* HIDDEN CANVAS FOR EXPORT (STABLE REF) */}
       <div style={{ position: 'fixed', top: '-10000px', left: 0, pointerEvents: 'none' }}>
         {metadata && (
-          <div 
+          <div
             ref={previewRef}
-            style={{ 
-              width: '1200px', 
-              height: '630px', 
+            style={{
+              width: '1200px',
+              height: '630px',
               background: tStyles.background,
               color: tStyles.color,
               fontFamily: 'Inter, sans-serif',
@@ -291,14 +295,17 @@ function App() {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
               {metadata.logo ? (
-                <img 
-                  src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(metadata.logo.url)}`} 
-                  alt="logo" 
-                  crossOrigin="anonymous"
-                  style={{ width: '80px', height: '80px', objectFit: 'contain' }} 
+                <img
+                  src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(metadata.logo.url)}`}
+                  alt="logo"
+                  style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                 />
               ) : (
-                <img src="/logo.png" alt="SnapGraph Isotype" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
+                <img 
+                  src={`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`} 
+                  alt="logo" 
+                  style={{ width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' }}
+                />
               )}
               <span style={{ fontSize: '2rem', fontWeight: 900, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '4px' }}>{metadata.publisher || (url ? new URL(url).hostname : 'SNAPGRAPH')}</span>
             </div>
