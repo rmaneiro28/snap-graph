@@ -248,14 +248,14 @@ function App() {
                   <div className="flex items-center gap-3">
                     {metadata.logo ? (
                       <img
-                        src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
+                        src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&output=png&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
                         alt="logo"
                         className="w-8 h-8 object-contain"
                         onError={(e) => { e.target.onerror = null; e.target.src = `https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`; }}
                       />
                     ) : (
                       <img 
-                        src={`https://images.weserv.nl/?url=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}&default=https%3A%2F%2Fsnap-graph.vercel.app%2Flogo.png`} 
+                        src={`https://images.weserv.nl/?url=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}&output=png&default=https%3A%2F%2Fsnap-graph.vercel.app%2Flogo.png`} 
                         alt="logo" 
                         className="w-8 h-8 object-contain rounded-md"
                         onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
@@ -299,14 +299,14 @@ function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
               {metadata.logo ? (
                 <img
-                  src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
+                  src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&output=png&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
                   alt="logo"
                   style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                   onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                 />
               ) : (
                 <img 
-                  src={`https://images.weserv.nl/?url=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}&default=https%3A%2F%2Fsnap-graph.vercel.app%2Flogo.png`} 
+                  src={`https://images.weserv.nl/?url=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}&output=png&default=https%3A%2F%2Fsnap-graph.vercel.app%2Flogo.png`} 
                   alt="logo" 
                   style={{ width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' }}
                   onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
