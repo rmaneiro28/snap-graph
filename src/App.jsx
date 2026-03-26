@@ -52,7 +52,8 @@ function App() {
       const dataUrl = await toPng(previewRef.current, {
         pixelRatio: 2,
         cacheBust: true,
-        skipFonts: true
+        skipFonts: true,
+        imagePlaceholder: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
       });
 
       const link = document.createElement('a');
@@ -247,15 +248,17 @@ function App() {
                   <div className="flex items-center gap-3">
                     {metadata.logo ? (
                       <img
-                        src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(metadata.logo.url)}`}
+                        src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
                         alt="logo"
                         className="w-8 h-8 object-contain"
+                        onError={(e) => { e.target.onerror = null; e.target.src = `https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`; }}
                       />
                     ) : (
                       <img 
-                        src={`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`} 
+                        src={`https://images.weserv.nl/?url=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}&default=https%3A%2F%2Fsnap-graph.vercel.app%2Flogo.png`} 
                         alt="logo" 
                         className="w-8 h-8 object-contain rounded-md"
+                        onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                       />
                     )}
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">{metadata.publisher || 'SNAPGRAPH'}</span>
@@ -296,15 +299,17 @@ function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
               {metadata.logo ? (
                 <img
-                  src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(metadata.logo.url)}`}
+                  src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
                   alt="logo"
                   style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                 />
               ) : (
                 <img 
-                  src={`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`} 
+                  src={`https://images.weserv.nl/?url=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}&default=https%3A%2F%2Fsnap-graph.vercel.app%2Flogo.png`} 
                   alt="logo" 
                   style={{ width: '80px', height: '80px', objectFit: 'contain', borderRadius: '8px' }}
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                 />
               )}
               <span style={{ fontSize: '2rem', fontWeight: 900, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '4px' }}>{metadata.publisher || (url ? new URL(url).hostname : 'SNAPGRAPH')}</span>
