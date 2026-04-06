@@ -3,41 +3,19 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --accent-primary: #00f2fe;
-    --accent-secondary: #4facfe;
-    --bg-dark: #050505;
-    --text-primary: #ffffff;
-    --text-secondary: #a0a0a0;
-    --border-card: rgba(255, 255, 255, 0.1);
-  }
-
   body {
-    @apply bg-zinc-950 text-white font-sans antialiased m-0 overflow-x-hidden;
+    @apply bg-[#030712] text-zinc-100 font-sans antialiased m-0 overflow-x-hidden;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px);
+    background-size: 30px 30px;
   }
 }
 
-@layer components {
-  .glass {
-    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.05] rounded-3xl transition-all duration-300;
+@layer utilities {
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
-  
-  .glass-hover {
-    @apply hover:bg-white/[0.06] hover:border-white/[0.1] hover:shadow-2xl hover:shadow-cyan-500/10;
-  }
-
-  .text-gradient {
-    @apply bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 bg-clip-text text-transparent;
-  }
-
-  .btn-primary {
-    @apply bg-gradient-to-r from-cyan-400 to-blue-500 text-zinc-950 font-black px-6 py-3 rounded-full 
-           flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-cyan-500/20
-           hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none whitespace-nowrap shrink-0;
-  }
-
-  .snap-input {
-    @apply w-full bg-white/[0.03] border-2 border-white/[0.05] rounded-2xl px-6 py-4 outline-none
-           transition-all duration-300 focus:border-cyan-500/50 focus:bg-white/[0.06] text-lg;
+  .animate-shimmer {
+    animation: shimmer 1.5s infinite;
   }
 }

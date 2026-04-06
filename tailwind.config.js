@@ -16,6 +16,10 @@ export default {
           border: 'rgba(255, 255, 255, 0.1)',
         }
       },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        outfit: ['Outfit', 'sans-serif'],
+      },
       backgroundImage: {
         'gradient-premium': 'linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)',
       }
