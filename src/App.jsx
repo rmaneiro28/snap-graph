@@ -46,17 +46,28 @@ function App() {
 
   // Helper for proxied image URLs
   const getProxiedImage = (originalUrl, fallbackType = 'favicon') => {
-    if (!originalUrl) return '';
-    // Normalize relative URLs (rough estimation)
+    // Determine current site hostname safely
+    let currentDomain = 'snapgraph';
+    try {
+      if (url) {
+        const temp = url.trim().startsWith('http') ? url.trim() : `https://${url.trim()}`;
+        currentDomain = new URL(temp).hostname;
+      }
+    } catch (e) { }
+
+    if (!originalUrl) {
+      if (fallbackType === 'favicon') {
+        return `https://www.google.com/s2/favicons?domain=${currentDomain}&sz=128`;
+      }
+      return '';
+    }
+
+    // Normalize relative URLs
     let cleanOriginal = originalUrl;
     if (cleanOriginal.startsWith('//')) cleanOriginal = 'https:' + cleanOriginal;
     
-    // Using weserv.nl as an image proxy and resizer (it helps bypass CORS)
-    return `https://images.weserv.nl/?url=${encodeURIComponent(cleanOriginal)}&output=png&default=${encodeURIComponent(
-      fallbackType === 'favicon' 
-        ? `https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : 'snapgraph'}&sz=128`
-        : `https://ogsnapgraph.app/api/placeholder?title=NoImage`
-    )}`;
+    // Proxy through weserv to bypass CORS
+    return `https://images.weserv.nl/?url=${encodeURIComponent(cleanOriginal)}&output=png`;
   };
 
   const fetchMetadata = async () => {
