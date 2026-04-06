@@ -1,15 +1,15 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, Globe, Zap, RefreshCcw, Layout, Smartphone, Briefcase } from 'lucide-react';
+import { Download, Globe, Zap, RefreshCcw, Smartphone, Briefcase, MessageSquare, Share2, Square, RectangleHorizontal } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 const INITIAL_RECENT_PAGES = [
-  { url: 'vercel.com', title: 'Vercel: Develop. Preview. Ship.', score: 100, color: 'bg-[#000000] text-zinc-100', isBrand: 'vercel' },
-  { url: 'linear.app', title: 'Linear – Purpose-built tool for modern software teams', score: 98, color: 'bg-[#5e6ad2] text-white', isBrand: 'linear' },
-  { url: 'stripe.com', title: 'Financial infrastructure for the internet | Stripe', score: 96, color: 'bg-[#635bff] text-white', isBrand: 'stripe' },
-  { url: 'framer.com', title: 'Framer — Start your dream site with AI.', score: 92, color: 'bg-black text-[#00aaff]', isBrand: 'framer' },
-  { url: 'openai.com', title: 'OpenAI: Creating safe AGI that benefits all of humanity', score: 87, color: 'bg-[#74aa9c] text-white', isBrand: 'openai' },
-  { url: 'github.com', title: 'GitHub: Let\'s build from here · GitHub', score: 95, color: 'bg-[#24292f] text-white', isBrand: 'github' },
+  { url: 'vercel.com', title: 'Vercel: Develop. Preview. Ship.', score: 100, color: 'text-emerald-400', isBrand: 'vercel' },
+  { url: 'linear.app', title: 'Linear – Purpose-built tool for modern software teams', score: 98, color: 'text-white', isBrand: 'linear' },
+  { url: 'stripe.com', title: 'Financial infrastructure for the internet | Stripe', score: 96, color: 'text-white', isBrand: 'stripe' },
+  { url: 'framer.com', title: 'Framer — Start your dream site with AI.', score: 92, color: 'text-[#00aaff]', isBrand: 'framer' },
+  { url: 'openai.com', title: 'OpenAI: Creating safe AGI that benefits all of humanity', score: 87, color: 'text-white', isBrand: 'openai' },
+  { url: 'github.com', title: 'GitHub: Let\'s build from here · GitHub', score: 95, color: 'text-white', isBrand: 'github' },
 ];
 
 const BrandLogo = ({ brand, className }) => {
@@ -37,11 +37,27 @@ function App() {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedTemplate, setSelectedTemplate] = useState('dark-neon');
+  const [aspectRatio, setAspectRatio] = useState('standard');
   const [recentHistory, setRecentHistory] = useState(() => {
     const saved = localStorage.getItem('snapgraph_history');
     return saved ? JSON.parse(saved) : INITIAL_RECENT_PAGES;
   });
   const previewRef = useRef(null);
+
+  // Helper for proxied image URLs
+  const getProxiedImage = (originalUrl, fallbackType = 'favicon') => {
+    if (!originalUrl) return '';
+    // Normalize relative URLs (rough estimation)
+    let cleanOriginal = originalUrl;
+    if (cleanOriginal.startsWith('//')) cleanOriginal = 'https:' + cleanOriginal;
+    
+    // Using weserv.nl as an image proxy and resizer (it helps bypass CORS)
+    return `https://images.weserv.nl/?url=${encodeURIComponent(cleanOriginal)}&output=png&default=${encodeURIComponent(
+      fallbackType === 'favicon' 
+        ? `https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : 'snapgraph'}&sz=128`
+        : `https://ogsnapgraph.app/api/placeholder?title=NoImage`
+    )}`;
+  };
 
   const fetchMetadata = async () => {
     if (!url) return;
@@ -67,9 +83,7 @@ function App() {
           url: new URL(cleanUrl).hostname,
           title: meta.title || cleanUrl,
           score: score,
-          color: score > 80 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                 score > 50 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 
-                 'bg-red-500/10 text-red-400 border-red-500/20',
+          color: score > 80 ? 'text-emerald-400' : score > 50 ? 'text-amber-400' : 'text-red-400',
           logoUrl: meta.logo?.url || `https://www.google.com/s2/favicons?domain=${new URL(cleanUrl).hostname}&sz=128`
         };
 
@@ -94,22 +108,22 @@ function App() {
       background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
       color: '#fff',
       accent: '#22d3ee',
-      titleSize: '3.5rem',
-      descSize: '1.25rem'
+      titleSize: aspectRatio === 'standard' ? '3.5rem' : '2.5rem',
+      descSize: aspectRatio === 'standard' ? '1.25rem' : '1rem'
     },
     'minimal': {
       background: '#ffffff',
       color: '#000',
       accent: '#000',
-      titleSize: '3rem',
-      descSize: '1.1rem'
+      titleSize: aspectRatio === 'standard' ? '3rem' : '2.2rem',
+      descSize: aspectRatio === 'standard' ? '1.1rem' : '0.9rem'
     },
     'corporate': {
       background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
       color: '#fff',
       accent: '#38bdf8',
-      titleSize: '3.25rem',
-      descSize: '1.2rem'
+      titleSize: aspectRatio === 'standard' ? '3.25rem' : '2.4rem',
+      descSize: aspectRatio === 'standard' ? '1.2rem' : '1rem'
     }
   };
 
@@ -140,7 +154,7 @@ function App() {
       <header className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <svg viewBox="0 0 40 40" className="w-8 h-8 fill-white">
-            <path d="M20 0C8.954 0 0 8.954 0 20s8.954 20 20 20 20-8.954 20-20S31.046 0 20 0zm0 36c-8.837 0-16-7.163-16-16S11.163 4 20 4s16 7.163 16 16-7.163 16-16 16z"/><path d="M20 8l-8 12h5v12l8-12h-5V8z"/>
+            <path d="M20 0C8.954 0 0 8.954 0 20s8.954 20 20 20 20-8.954 20-20S31.046 0 20 0zm0 36c-8.837 0-16-7.163-16-16S11.163 4 20 4s16 7.163 16 16-7.163 16-16 16z" /><path d="M20 8l-8 12h5v12l8-12h-5V8z" />
           </svg>
           <div className="flex flex-col">
             <span className="text-[18px] font-black tracking-tighter leading-none">SnapGraph</span>
@@ -161,13 +175,13 @@ function App() {
           {/* Left Column */}
           <div className="space-y-10">
             <h1 className="text-[68px] font-black leading-[1] tracking-tight">
-              <span className="text-cyan-400">Atrae más clics</span> <br />
+              <span className="text-cyan-400 font-black">Atrae más clics</span> <br />
               con <br />
               Gráficos de <br />
               Impacto.
             </h1>
 
-            <p className="text-zinc-500 text-lg max-w-sm leading-relaxed">
+            <p className="text-zinc-500 text-lg max-w-sm leading-relaxed font-medium">
               SnapGraph automatiza la creación de tus OG-Images. Solo pega el link y nosotros hacemos el resto en segundos.
             </p>
 
@@ -188,7 +202,7 @@ function App() {
                   <button
                     onClick={fetchMetadata}
                     disabled={loading}
-                    className="relative bg-cyan-500 hover:bg-cyan-400 text-[#030303] px-6 py-3 rounded-lg font-black transition-all disabled:opacity-70 flex items-center justify-center gap-2 text-[13px]  group/btn overflow-hidden"
+                    className="relative bg-cyan-500 hover:bg-cyan-400 text-[#030303] px-6 py-3 rounded-lg font-black transition-all disabled:opacity-70 flex items-center justify-center gap-2 text-[13px] group/btn overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-shimmer" />
                     <Zap size={14} fill="currentColor" />
@@ -198,25 +212,51 @@ function App() {
                 {error && <p className="text-red-400 text-xs font-bold mt-3 px-1">{error}</p>}
               </div>
 
-              <div className="space-y-4">
-                <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600">Selecciona un Estilo</h3>
-                <div className="flex gap-4 max-w-md">
-                  {TEMPLATES.map((t) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-lg">
+                <div className="space-y-4">
+                  <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600">Selecciona un Estilo</h3>
+                  <div className="flex gap-3">
+                    {TEMPLATES.map((t) => (
+                      <button
+                        key={t.id}
+                        className={`flex-1 bg-[#0a0a0a] p-4 rounded-2xl flex flex-col items-center gap-2 border transition-all ${selectedTemplate === t.id ? 'border-cyan-500/50 bg-cyan-500/5 shadow-lg shadow-cyan-500/5' : 'border-zinc-900'
+                          }`}
+                        onClick={() => setSelectedTemplate(t.id)}
+                      >
+                        <div className={`${selectedTemplate === t.id ? 'text-cyan-400' : 'text-zinc-500'}`}>
+                          {t.icon}
+                        </div>
+                        <span className={`text-[7px] font-black uppercase tracking-[0.1em] ${selectedTemplate === t.id ? 'text-white' : 'text-zinc-600'
+                          }`}>
+                          {t.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600">Formato Imagen</h3>
+                  <div className="flex gap-3">
                     <button
-                      key={t.id}
-                      className={`flex-1 bg-[#0a0a0a] p-5 rounded-2xl flex flex-col items-center gap-3 border transition-all ${selectedTemplate === t.id ? 'border-cyan-500/50 bg-cyan-500/5' : 'border-zinc-900 shadow-xl'
-                        }`}
-                      onClick={() => setSelectedTemplate(t.id)}
+                      className={`flex-1 bg-[#0a0a0a] p-4 rounded-2xl flex flex-col items-center gap-2 border transition-all ${aspectRatio === 'standard' ? 'border-cyan-500/50 bg-cyan-500/5' : 'border-zinc-900'}`}
+                      onClick={() => setAspectRatio('standard')}
                     >
-                      <div className={`${selectedTemplate === t.id ? 'text-cyan-400' : 'text-zinc-500'}`}>
-                        {t.icon}
-                      </div>
-                      <span className={`text-[8px] font-black uppercase tracking-[0.1em] ${selectedTemplate === t.id ? 'text-white' : 'text-zinc-600'
-                        }`}>
-                        {t.name}
+                      <RectangleHorizontal size={18} className={aspectRatio === 'standard' ? 'text-cyan-400' : 'text-zinc-500'} />
+                      <span className={`text-[7px] font-black uppercase tracking-[0.1em] ${aspectRatio === 'standard' ? 'text-white' : 'text-zinc-600'}`}>
+                        1.91:1 Standard
                       </span>
                     </button>
-                  ))}
+                    <button
+                      className={`flex-1 bg-[#0a0a0a] p-4 rounded-2xl flex flex-col items-center gap-2 border transition-all ${aspectRatio === 'square' ? 'border-cyan-500/50 bg-cyan-500/5' : 'border-zinc-900'}`}
+                      onClick={() => setAspectRatio('square')}
+                    >
+                      <Square size={18} className={aspectRatio === 'square' ? 'text-cyan-400' : 'text-zinc-500'} />
+                      <span className={`text-[7px] font-black uppercase tracking-[0.1em] ${aspectRatio === 'square' ? 'text-white' : 'text-zinc-600'}`}>
+                        1:1 Square
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -226,7 +266,7 @@ function App() {
           <div className="space-y-6">
             <div className="flex justify-between items-center px-1">
               <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-600 flex items-center gap-2">
-                <Globe size={12} className="text-cyan-400" /> Previsualización
+                <Globe size={12} className="text-cyan-400" /> Previsualización Export
               </h3>
               <AnimatePresence>
                 {metadata && (
@@ -250,12 +290,12 @@ function App() {
               
               <AnimatePresence mode="wait">
                 {!metadata && !loading ? (
-                  <div className="aspect-[1200/630] flex flex-col items-center justify-center opacity-40">
+                  <div className={`aspect-[${aspectRatio === 'standard' ? '1200/630' : '1/1'}] flex flex-col items-center justify-center opacity-40 transition-all duration-500`}>
                     <Globe size={32} className="text-zinc-700 mb-4" />
                     <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em]">Esperando una URL...</p>
                   </div>
                 ) : loading ? (
-                  <div className="aspect-[1200/630] flex flex-col items-center justify-center">
+                  <div className={`aspect-[${aspectRatio === 'standard' ? '1200/630' : '1/1'}] flex flex-col items-center justify-center transition-all duration-500`}>
                     <RefreshCcw size={48} className="animate-spin text-cyan-400" />
                     <p className="mt-8 text-cyan-400 font-black uppercase tracking-[0.5em] text-[10px] animate-pulse">
                       Analizando Sitio
@@ -265,7 +305,7 @@ function App() {
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-10 aspect-[1200/630] flex flex-col justify-center gap-6"
+                    className={`aspect-[${aspectRatio === 'standard' ? '1200/630' : '1/1'}] flex flex-col justify-center gap-6 p-10 transition-all duration-500`}
                     style={{
                       background: tStyles.background,
                       color: tStyles.color,
@@ -274,19 +314,19 @@ function App() {
                     <div className="flex items-center gap-3">
                       {metadata.logo ? (
                         <img
-                          src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&output=png&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
+                          src={getProxiedImage(metadata.logo.url)}
                           alt="logo"
                           className="w-10 h-10 object-contain shadow-2xl"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-cyan-500/20 rounded-md flex items-center justify-center">
-                           <Globe size={20} className="text-cyan-400" />
+                        <div className="w-10 h-10 bg-cyan-500/20 rounded-md flex items-center justify-center text-cyan-400">
+                           <Globe size={20} />
                         </div>
                       )}
                       <span className="text-[12px] font-black uppercase tracking-[0.3em] opacity-40">{metadata.publisher || 'SNAPGRAPH'}</span>
                     </div>
-                    <h4 className="text-4xl font-black leading-tight line-clamp-2">{metadata.title}</h4>
-                    <p className="text-base opacity-60 line-clamp-3 leading-relaxed max-w-sm">
+                    <h4 className="font-black leading-tight line-clamp-2" style={{ fontSize: tStyles.titleSize }}>{metadata.title}</h4>
+                    <p className="opacity-60 line-clamp-3 leading-relaxed max-w-sm" style={{ fontSize: tStyles.descSize }}>
                       {metadata.description}
                     </p>
                     <div className="mt-4 pt-10 border-t border-current flex items-center justify-between" style={{ borderColor: 'color-mix(in srgb, currentColor 10%, transparent)' }}>
@@ -300,20 +340,159 @@ function App() {
           </div>
         </div>
 
+        {/* --- APP PREVIEW LAB SECTION --- */}
+        <AnimatePresence>
+          {metadata && (
+            <motion.div 
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-32 space-y-12"
+            >
+              <div className="flex items-center gap-8">
+                <h2 className="text-[14px] font-black uppercase tracking-[0.5em] text-zinc-700 whitespace-nowrap font-black">App Preview Lab</h2>
+                <div className="h-px bg-zinc-900 flex-1"></div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/* WhatsApp Mockup */}
+                <div className="space-y-4">
+                  <h4 className="flex items-center gap-2 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                    <MessageSquare size={14} className="text-emerald-500" /> WhatsApp Simulation
+                  </h4>
+                  <div className="bg-[#0b141a] p-6 rounded-[24px] border border-zinc-800 shadow-2xl min-h-[300px] flex items-end">
+                    <div className="bg-[#005c4b] text-white p-2 rounded-xl rounded-bl-none max-w-[85%] shadow-lg relative">
+                      <div className="bg-[#023e33] rounded-lg overflow-hidden border border-white/5">
+                        <div className="aspect-[1.91/1] overflow-hidden bg-black flex items-center justify-center">
+                          <img 
+                            src={getProxiedImage(metadata.image?.url, 'placeholder')} 
+                            className="w-full h-full object-cover"
+                            alt="WA Preview"
+                          />
+                        </div>
+                        <div className="p-3 bg-[#0b1c1e]">
+                          <div className="text-[13px] font-bold truncate text-zinc-200">{metadata.title}</div>
+                          <div className="text-[11px] opacity-60 line-clamp-2 text-zinc-400 mt-0.5 font-medium">{metadata.description}</div>
+                          <div className="text-[9px] opacity-40 mt-1 uppercase tracking-wider font-bold">{url ? new URL(url).hostname : ''}</div>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-emerald-300/60 mt-1 text-right">11:35 AM</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Twitter Mockup */}
+                <div className="space-y-4">
+                  <h4 className="flex items-center gap-2 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="white" className="shrink-0"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> 
+                    X (Twitter) Card
+                  </h4>
+                  <div className="bg-black p-6 rounded-[24px] border border-zinc-900 shadow-2xl flex flex-col gap-4">
+                    <div className="flex gap-3">
+                      <div className="w-12 h-12 bg-zinc-800 rounded-full shrink-0"></div>
+                      <div className="space-y-1.5 w-full">
+                        <div className="flex gap-2">
+                          <div className="h-3 w-24 bg-zinc-800 rounded"></div>
+                          <div className="h-3 w-16 bg-zinc-900 rounded"></div>
+                        </div>
+                        <div className="h-3 w-full bg-zinc-900 rounded"></div>
+                      </div>
+                    </div>
+                    <div className="ml-15 border border-zinc-800 rounded-2xl overflow-hidden bg-black">
+                      <div className="aspect-[1.91/1] overflow-hidden border-b border-zinc-800 bg-zinc-900 flex items-center justify-center">
+                        <img 
+                          src={getProxiedImage(metadata.image?.url, 'placeholder')} 
+                          className="w-full h-full object-cover"
+                          alt="Twitter Preview"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <div className="text-[13px] text-zinc-500 font-medium mb-1 lowercase">{url ? new URL(url).hostname : ''}</div>
+                        <div className="text-[14px] font-medium text-white line-clamp-1">{metadata.title}</div>
+                        <div className="text-[14px] text-zinc-500 line-clamp-1 font-medium">{metadata.description}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Facebook Mockup */}
+                <div className="space-y-4">
+                  <h4 className="flex items-center gap-2 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="#1877F2" className="shrink-0"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
+                    Facebook Standard
+                  </h4>
+                  <div className="bg-[#242526] p-4 rounded-[24px] border border-zinc-800 shadow-2xl space-y-3 font-sans">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 bg-zinc-800 rounded-full"></div>
+                      <div className="space-y-1">
+                        <div className="h-2.5 w-32 bg-zinc-800 rounded"></div>
+                        <div className="h-2 w-20 bg-zinc-900 rounded"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-2.5 w-full bg-zinc-800 rounded"></div>
+                      <div className="h-2.5 w-2/3 bg-zinc-800 rounded"></div>
+                    </div>
+                    <div className="bg-[#3a3b3c] overflow-hidden border border-zinc-700/50">
+                      <div className="aspect-[1.91/1] overflow-hidden bg-zinc-800 flex items-center justify-center">
+                        <img
+                          src={getProxiedImage(metadata.image?.url, 'placeholder')}
+                          className="w-full h-full object-cover"
+                          alt="FB Preview"
+                        />
+                      </div>
+                      <div className="p-3 bg-[#3a3b3c] border-t border-zinc-700/30">
+                        <div className="text-[12px] text-zinc-400 uppercase tracking-wider mb-0.5 font-bold">{url ? new URL(url).hostname : ''}</div>
+                        <div className="text-[16px] font-bold text-zinc-100 line-clamp-1">{metadata.title}</div>
+                        <div className="text-[14px] text-zinc-400 line-clamp-1 font-medium">{metadata.description}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Discord Mockup */}
+                <div className="space-y-4">
+                  <h4 className="flex items-center gap-2 text-[10px] font-black text-zinc-500 uppercase tracking-widest text-left">
+                    <Share2 size={14} className="text-cyan-400" /> Discord / Slack Dark
+                  </h4>
+                  <div className="bg-[#2f3136] p-6 rounded-[24px] border border-zinc-900 shadow-2xl flex flex-col gap-3 text-left">
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 bg-zinc-700 rounded-full shrink-0"></div>
+                      <div className="space-y-3 w-full">
+                        <div className="h-3 w-32 bg-zinc-800 rounded"></div>
+                        <div className="bg-[#2a2b30] border-l-4 border-cyan-500/50 p-4 rounded-r-lg space-y-3 max-w-[90%]">
+                          <div className="text-[#00b0f4] font-bold text-[14px] hover:underline cursor-pointer">{metadata.title}</div>
+                          <div className="text-[13px] text-zinc-300 leading-snug font-medium">{metadata.description}</div>
+                          <div className="aspect-[1.91/1] rounded-lg overflow-hidden mt-2 bg-zinc-800 flex items-center justify-center">
+                            <img
+                              src={getProxiedImage(metadata.image?.url, 'placeholder')}
+                              className="w-full h-full object-cover"
+                              alt="Discord Preview"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Recently Inspected Section */}
         <div className="mt-40 text-left">
           <div className="flex items-center gap-8 mb-12">
-            <h2 className="text-[14px] font-black uppercase tracking-[0.5em] text-zinc-700 whitespace-nowrap">Recently Inspected</h2>
+            <h2 className="text-[14px] font-black uppercase tracking-[0.5em] text-zinc-700 whitespace-nowrap font-black">Recently Inspected</h2>
             <div className="h-px bg-zinc-900 flex-1"></div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recentHistory.map((page, i) => (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + (i * 0.05) }}
-                key={`${page.url}-${i}`} 
+                key={`${page.url}-${i}`}
                 className="bg-[#0a0a0a] border border-zinc-900 p-4 rounded-xl flex items-center justify-between hover:border-cyan-500/40 transition-all cursor-pointer group shadow-2xl"
                 onClick={() => {
                   setUrl(page.url);
@@ -325,7 +504,7 @@ function App() {
                     {page.isBrand ? (
                       <BrandLogo brand={page.isBrand} className="w-full h-full" />
                     ) : (
-                      <img src={page.logoUrl} className="w-full h-full object-contain" alt="Favicon" />
+                      <img src={getProxiedImage(page.logoUrl)} className="w-full h-full object-contain" alt="Favicon" />
                     )}
                   </div>
                   <div className="truncate flex-1">
@@ -348,8 +527,8 @@ function App() {
           <div
             ref={previewRef}
             style={{
-              width: '1200px',
-              height: '630px',
+              width: aspectRatio === 'standard' ? '1200px' : '1080px',
+              height: aspectRatio === 'standard' ? '630px' : '1080px',
               background: tStyles.background,
               color: tStyles.color,
               fontFamily: 'Inter, sans-serif',
@@ -363,13 +542,13 @@ function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
               {metadata.logo ? (
                 <img
-                  src={`https://images.weserv.nl/?url=${encodeURIComponent(metadata.logo.url)}&output=png&default=${encodeURIComponent(`https://www.google.com/s2/favicons?domain=${url ? new URL(url).hostname : ''}&sz=128`)}`}
+                  src={getProxiedImage(metadata.logo.url)}
                   alt="logo"
                   style={{ width: '80px', height: '80px', objectFit: 'contain' }}
                 />
               ) : (
                 <div style={{ width: '80px', height: '80px', background: 'rgba(34, 211, 238, 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg viewBox="0 0 24 24" width="40" height="40" stroke="#22d3ee" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <svg viewBox="0 0 24 24" width="40" height="40" stroke="#22d3ee" strokeWidth="2" fill="none"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
                 </div>
               )}
               <span style={{ fontSize: '2rem', fontWeight: 900, opacity: 0.6, textTransform: 'uppercase', letterSpacing: '4px' }}>{metadata.publisher || (url ? new URL(url).hostname : 'SNAPGRAPH')}</span>
